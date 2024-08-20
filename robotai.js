@@ -57,7 +57,7 @@ async function askAI(gameName, question) {
 
     console.log('AI Response:', response); // Log the AI response
 
-    const answer = response.answer.trim();
+    const answer = "RObot: " + response.answer.trim();
     return answer;
   } catch (error) {
     console.error(`Error in askAI: ${error.stack}`);
