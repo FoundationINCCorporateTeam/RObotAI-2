@@ -35,7 +35,6 @@ async function fetchChatData(gameName) {
   }
 }
 
-// Query Hugging Face model with user input
 async function askAI(gameName, question) {
   try {
     const chatData = await fetchChatData(gameName);
@@ -60,12 +59,17 @@ async function askAI(gameName, question) {
     const answer = "RObot: " + response.answer.trim();
     const score = response.score; // Retrieve the confidence score from the response
 
+    if (score < 0.4) {
+      return { answer: "No answer to your question was found. Please try again or talk to a support agent!", score };
+    }
+
     return { answer, score };
   } catch (error) {
     console.error(`Error in askAI: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
   }
 }
+
 
 // API endpoint to handle POST requests
 app.post('/ask', async (req, res) => {
