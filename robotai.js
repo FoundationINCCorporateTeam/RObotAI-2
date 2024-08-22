@@ -41,7 +41,7 @@ async function askAI(gameName, question) {
     const chatData = await fetchChatData(gameName);
 
     if (chatData.length === 0) {
-      return 'No relevant data found in the database.';
+      return { answer: 'No relevant data found in the database.', score: null };
     }
 
     const context = chatData.map(row => `${row.question}: ${row.answer}`).join('\n');
@@ -58,7 +58,9 @@ async function askAI(gameName, question) {
     console.log('AI Response:', response); // Log the AI response
 
     const answer = "RObot: " + response.answer.trim();
-    return answer;
+    const score = response.score; // Retrieve the confidence score from the response
+
+    return { answer, score };
   } catch (error) {
     console.error(`Error in askAI: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
@@ -74,9 +76,9 @@ app.post('/ask', async (req, res) => {
   }
 
   try {
-    const answer = await askAI(gameName, question);
+    const { answer, score } = await askAI(gameName, question);
     console.log('Final Answer:', answer); // Log the final answer
-    res.json({ answer });
+    res.json({ answer, score });
   } catch (error) {
     console.error(`Error in /ask endpoint: ${error.stack}`);
     res.status(500).json({ error: `An error occurred while processing your request: ${error.message}` });
