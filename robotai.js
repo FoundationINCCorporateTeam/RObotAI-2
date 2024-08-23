@@ -73,7 +73,7 @@ async function askAIGPT(gameName, question) {
   try {
     // Generate a response using the text generation model
     const response = await hf.textGeneration({
-      model: 'microsoft/phi-3-4k',
+      model: 'microsoft/Phi-3-mini-4k-instruct',
       inputs: question, // Directly use the question as the input
       parameters: {
         max_length: 100, // Adjust based on desired response length
