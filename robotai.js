@@ -83,8 +83,14 @@ async function askAIGPT(gameName, question) {
 
     console.log('AI Response:', response); // Log the AI response
 
-    const answer = "roGPT: " + response.generated_text.trim();
-    return { answer }; // Return the generated answer
+    // Extract the part of the response after the question
+    const generatedText = response.generated_text.trim();
+
+    // Split the text to remove the question and keep only the answer
+    const answerLines = generatedText.split('\n').filter(line => !line.startsWith(question));
+    const answer = "roGPT: " + answerLines.join('\n').trim();
+
+    return { answer }; // Return the extracted answer
   } catch (error) {
     console.error(`Error in askAIGPT: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
