@@ -71,48 +71,52 @@ async function askAI(gameName, question) {
 }
 async function askAIGPT(gameName, question) {
   try {
-    // Generate a response using the text generation model
-    const response = await hf.textGeneration({
-      model: 'microsoft/Phi-3-mini-4k-instruct',
-      inputs: question, // Directly use the question as the input
-      parameters: {
-        temperature: 0.7,  // Adjust for creativity (higher) vs. determinism (lower)
-        // max_length is omitted to let the model decide the length
+    let completeResponse = '';
+    let isResponseComplete = false;
+    let continuationPrompt = question; // Start with the original question
+
+    while (!isResponseComplete) {
+      // Generate a response using the text generation model
+      const response = await hf.textGeneration({
+        model: 'microsoft/Phi-3-mini-4k-instruct',
+        inputs: continuationPrompt, // Use continuation prompt if needed
+        parameters: {
+          temperature: 0.7, // Adjust for creativity (higher) vs. determinism (lower)
+          // max_length is omitted to let the model decide the length
+        }
+      });
+
+      console.log('AI Response:', response); // Log the AI response
+
+      let generatedText = response.generated_text.trim();
+
+      // Check if the response might be truncated
+      if (generatedText.endsWith('...')) {
+        // The response seems to be truncated, so prepare to continue
+        completeResponse += generatedText.slice(0, -3).trim() + ' ';
+        continuationPrompt = ''; // Send an empty prompt to encourage continuation
+      } else {
+        // The response is likely complete
+        completeResponse += generatedText;
+        isResponseComplete = true;
       }
-    });
+    }
 
-    console.log('AI Response:', response); // Log the AI response
+    // Clean up and return the answer without question or instruction artifacts
+    const answerStart = completeResponse.search(/#?\s*Answer\s*[:\s]/i);
+    if (answerStart !== -1) {
+      completeResponse = completeResponse.slice(answerStart).replace(/#?\s*Answer\s*[:\s]/i, '').trim();
+    }
 
-    // Extract the part of the response after the question
-    const generatedText = response.generated_text.trim();
+    const answer = "roGPT: " + completeResponse.trim();
+    return { answer };
 
-    // Split the text to remove the question and keep only the answer
-    const answerLines = generatedText.split('\n').filter(line => !line.startsWith(question));
-    const answer = "roGPT: " + answerLines.join('\n').trim();
-
-    return { answer }; // Return the extracted answer
   } catch (error) {
     console.error(`Error in askAIGPT: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
   }
 }
-// API endpoint to handle POST requests
-app.post('/askgpt', async (req, res) => {
-  const { gameName, question } = req.body;
 
-  if (!gameName || !question) {
-    return res.status(400).json({ error: 'Both gameName and question are required.' });
-  }
-
-  try {
-    const { answer } = await askAIGPT(gameName, question);
-    console.log('Final Answer:', answer); // Log the final answer
-    res.json({ answer });
-  } catch (error) {
-    console.error(`Error in /ask endpoint: ${error.stack}`);
-    res.status(500).json({ error: `An error occurred while processing your request: ${error.message}` });
-  }
-});
 // API endpoint to handle POST requests
 app.post('/ask', async (req, res) => {
   const { gameName, question } = req.body;
