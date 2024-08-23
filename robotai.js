@@ -116,7 +116,23 @@ async function askAIGPT(gameName, question) {
     throw error; // Re-throw to handle it further up if necessary
   }
 }
+// API endpoint to handle POST requests
+app.post('/askgpt', async (req, res) => {
+  const { gameName, question } = req.body;
 
+  if (!gameName || !question) {
+    return res.status(400).json({ error: 'Both gameName and question are required.' });
+  }
+
+  try {
+    const { answer } = await askAIGPT(gameName, question);
+    console.log('Final Answer:', answer); // Log the final answer
+    res.json({ answer });
+  } catch (error) {
+    console.error(`Error in /ask endpoint: ${error.stack}`);
+    res.status(500).json({ error: `An error occurred while processing your request: ${error.message}` });
+  }
+});
 // API endpoint to handle POST requests
 app.post('/ask', async (req, res) => {
   const { gameName, question } = req.body;
