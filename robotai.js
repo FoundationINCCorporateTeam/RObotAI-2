@@ -76,8 +76,8 @@ async function askAIGPT(gameName, question) {
       model: 'microsoft/Phi-3-mini-4k-instruct',
       inputs: question, // Directly use the question as the input
       parameters: {
-        max_length: 1000, // Adjust based on desired response length
-        temperature: 0.7, // Adjust for creativity vs. determinism
+        temperature: 0.7,  // Adjust for creativity (higher) vs. determinism (lower)
+        // max_length is omitted to let the model decide the length
       }
     });
 
@@ -86,11 +86,10 @@ async function askAIGPT(gameName, question) {
     const answer = "roGPT: " + response.generated_text.trim();
     return { answer }; // Return the generated answer
   } catch (error) {
-    console.error(`Error in askAI: ${error.stack}`);
+    console.error(`Error in askAIGPT: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
   }
 }
-
 // API endpoint to handle POST requests
 app.post('/askgpt', async (req, res) => {
   const { gameName, question } = req.body;
