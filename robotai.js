@@ -76,7 +76,7 @@ async function askAIGPT(gameName, question) {
       model: 'microsoft/Phi-3-mini-4k-instruct',
       inputs: question, // Directly use the question as the input
       parameters: {
-        max_length: 500, // Adjust based on desired response length
+        max_length: 1000, // Adjust based on desired response length
         temperature: 0.7, // Adjust for creativity vs. determinism
       }
     });
@@ -100,9 +100,9 @@ app.post('/askgpt', async (req, res) => {
   }
 
   try {
-    const { answer, score } = await askAIGPT(gameName, question);
+    const { answer } = await askAIGPT(gameName, question);
     console.log('Final Answer:', answer); // Log the final answer
-    res.json({ answer, score });
+    res.json({ answer });
   } catch (error) {
     console.error(`Error in /ask endpoint: ${error.stack}`);
     res.status(500).json({ error: `An error occurred while processing your request: ${error.message}` });
