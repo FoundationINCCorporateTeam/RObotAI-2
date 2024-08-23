@@ -76,7 +76,7 @@ async function askAIGPT(gameName, question) {
       model: 'microsoft/Phi-3-mini-4k-instruct',
       inputs: question, // Directly use the question as the input
       parameters: {
-        max_length: 100, // Adjust based on desired response length
+        max_length: 500, // Adjust based on desired response length
         temperature: 0.7, // Adjust for creativity vs. determinism
       }
     });
