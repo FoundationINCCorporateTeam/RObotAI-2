@@ -71,46 +71,20 @@ async function askAI(gameName, question) {
 }
 async function askAIGPT(gameName, question) {
   try {
-    let completeResponse = '';
-    let isResponseComplete = false;
-    let continuationPrompt = question; // Start with the original question
-
-    while (!isResponseComplete) {
-      // Generate a response using the text generation model
-      const response = await hf.textGeneration({
-        model: 'microsoft/Phi-3-mini-4k-instruct',
-        inputs: continuationPrompt, // Use continuation prompt if needed
-        parameters: {
-          temperature: 0.7, // Adjust for creativity (higher) vs. determinism (lower)
-          // max_length is omitted to let the model decide the length
-        }
-      });
-
-      console.log('AI Response:', response); // Log the AI response
-
-      let generatedText = response.generated_text.trim();
-
-      // Check if the response might be truncated
-      if (generatedText.endsWith('...')) {
-        // The response seems to be truncated, so prepare to continue
-        completeResponse += generatedText.slice(0, -3).trim() + ' ';
-        continuationPrompt = ''; // Send an empty prompt to encourage continuation
-      } else {
-        // The response is likely complete
-        completeResponse += generatedText;
-        isResponseComplete = true;
+    // Generate a response using the text generation model
+    const response = await hf.textGeneration({
+      model: 'microsoft/Phi-3-mini-4k-instruct',
+      inputs: question, // Directly use the question as the input
+      parameters: {
+        temperature: 0.7,  // Adjust for creativity (higher) vs. determinism (lower)
+        // max_length is omitted to let the model decide the length
       }
-    }
+    });
 
-    // Clean up and return the answer without question or instruction artifacts
-    const answerStart = completeResponse.search(/#?\s*Answer\s*[:\s]/i);
-    if (answerStart !== -1) {
-      completeResponse = completeResponse.slice(answerStart).replace(/#?\s*Answer\s*[:\s]/i, '').trim();
-    }
+    console.log('AI Response:', response); // Log the AI response
 
-    const answer = "roGPT: " + completeResponse.trim();
-    return { answer };
-
+    const answer = "roGPT: " + response.generated_text.trim();
+    return { answer }; // Return the generated answer
   } catch (error) {
     console.error(`Error in askAIGPT: ${error.stack}`);
     throw error; // Re-throw to handle it further up if necessary
